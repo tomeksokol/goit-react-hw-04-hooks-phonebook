@@ -51,6 +51,7 @@ class Phonebook extends Component {
           { id: nanoid(), name: this.state.name, number: this.state.number },
         ],
       }));
+      this.addContactToLocalStore(this.state.name, this.state.number);
     }
     form.reset();
   };
@@ -69,6 +70,28 @@ class Phonebook extends Component {
       contacts: this.state.contacts.filter(({ id }) => id !== idNumber),
     }));
   };
+
+  addContactToLocalStore = () => {
+    localStorage.setItem("phoneContacts", JSON.stringify(this.state.contacts));
+  };
+
+  // addNewContactToLocalStore = (newName) => {
+  //   const oldLocalStoreContacts = localStorage.getItem("contact") || [];
+  //   const newLocalStoreContact = [...oldLocalStoreContacts, newName];
+  //   localStorage.setItem("contact", newLocalStoreContact)
+  // }
+
+  componentDidMount() {
+    let getContacts = localStorage.getItem("phoneContacts");
+
+    getContacts
+      ? this.setState({ contacts: JSON.parse(getContacts) })
+      : this.addContactToLocalStore();
+  }
+
+  componentDidUpdate() {
+    this.addContactToLocalStore();
+  }
 
   render() {
     return (

@@ -1,122 +1,79 @@
-import React, { Component } from "react";
+import React, { useState, useEffect } from "react";
 import { nanoid } from "nanoid";
 import ContactForm from "../contactForm/ContactForm";
 import Filter from "../filter/Filter";
 import ContactList from "../contactList/ContactList";
 
-class Phonebook extends Component {
-  state = {
-    contacts: [
-      { id: "id-1", name: "Rosie Simpson", number: "459-12-56" },
-      { id: "id-2", name: "Hermione Kline", number: "443-89-12" },
-      { id: "id-22", name: "hermione kline", number: "443-89-12" },
-      { id: "id-3", name: "Eden Clements", number: "645-17-79" },
-      { id: "id-4", name: "Annie Copeland", number: "227-91-26" },
-    ],
-    name: this.props.name,
-    number: "",
-    filter: "",
-    id: "",
-  };
+const Phonebook = () => {
+  //states
 
-  inputNameID = nanoid();
-  inputTelID = nanoid();
+  const [contacts, setContacts] = useState(
+    JSON.parse(window.localStorage.getItem("phoneContacts")) ?? []
+  );
+  const [name, setName] = useState("");
+  const [number, setNumber] = useState("");
+  const [filter, setFilter] = useState("");
 
-  addContact = (e) => {
+  const inputNameID = nanoid();
+  const inputTelID = nanoid();
+
+  const addContact = (e) => {
     e.preventDefault();
-    this.setState((state) => ({
-      ...state,
-      name: e.target.value,
-    }));
+    setName(e.target.value);
   };
 
-  addNumber = (e) => {
+  const addNumber = (e) => {
     e.preventDefault();
-    this.setState((state) => ({
-      ...state,
-      number: e.target.value,
-    }));
+    setNumber(e.target.value);
   };
 
-  saveContact = (e) => {
+  const saveContact = (e) => {
     e.preventDefault();
     const form = e.currentTarget;
-    let arrayOfNames = this.state.contacts.map((arr) => arr.name);
-    if (arrayOfNames.includes(this.state.name)) {
-      alert(`${this.state.name} is already in contacts`);
+    let arrayOfNames = contacts.map((arr) => arr.name);
+    if (arrayOfNames.includes(name)) {
+      alert(`${name} is already in contacts`);
     } else {
-      this.setState((state) => ({
-        contacts: [
-          ...state.contacts,
-          { id: nanoid(), name: this.state.name, number: this.state.number },
-        ],
-      }));
-      this.addContactToLocalStore(this.state.name, this.state.number);
+      setContacts([...contacts, { id: nanoid(), name: name, number: number }]);
     }
     form.reset();
   };
 
-  filterName = (e) => {
+  const filterName = (e) => {
     e.preventDefault();
-    this.setState((state) => ({
-      ...state,
-      filter: e.target.value,
-    }));
+    setFilter(e.target.value);
   };
 
-  deleteContact = (idNumber) => {
-    this.setState((state) => ({
-      ...state,
-      contacts: this.state.contacts.filter(({ id }) => id !== idNumber),
-    }));
+  const deleteContact = (idNumber) => {
+    setContacts(contacts.filter(({ id }) => id !== idNumber));
   };
 
-  addContactToLocalStore = () => {
-    localStorage.setItem("phoneContacts", JSON.stringify(this.state.contacts));
-  };
+  useEffect(() => {
+    window.localStorage.setItem("phoneContacts", JSON.stringify(contacts));
+  }, [contacts]);
 
-  // addNewContactToLocalStore = (newName) => {
-  //   const oldLocalStoreContacts = localStorage.getItem("contact") || [];
-  //   const newLocalStoreContact = [...oldLocalStoreContacts, newName];
-  //   localStorage.setItem("contact", newLocalStoreContact)
-  // }
+  return (
+    <div>
+      <div className="form-container">
+        <h2>Phonebook</h2>
+        <ContactForm
+          saveContact={saveContact}
+          inputNameID={inputNameID}
+          addContact={addContact}
+          inputTelID={inputTelID}
+          addNumber={addNumber}
+        />
+        <h2>Contacts</h2>
+        <Filter filterName={filterName} />
 
-  componentDidMount() {
-    let getContacts = localStorage.getItem("phoneContacts");
-
-    getContacts
-      ? this.setState({ contacts: JSON.parse(getContacts) })
-      : this.addContactToLocalStore();
-  }
-
-  componentDidUpdate() {
-    this.addContactToLocalStore();
-  }
-
-  render() {
-    return (
-      <div>
-        <div className="form-container">
-          <h2>Phonebook</h2>
-          <ContactForm
-            saveContact={this.saveContact}
-            inputNameID={this.inputNameID}
-            addContact={this.addContact}
-            inputTelID={this.inputTelID}
-            addNumber={this.addNumber}
-          />
-          <h2>Contacts</h2>
-          <Filter filterName={this.filterName} />
-
-          <ContactList
-            filter={this.state.filter}
-            contacts={this.state.contacts}
-            deleteContact={this.deleteContact}
-          />
-        </div>
+        <ContactList
+          filter={filter}
+          contacts={contacts}
+          deleteContact={deleteContact}
+        />
       </div>
-    );
-  }
-}
+    </div>
+  );
+};
 
 export default Phonebook;
